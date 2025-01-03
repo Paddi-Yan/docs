@@ -11,6 +11,9 @@
   "servers": [
     {
       "url": "https://api.topmediai.com"
+    },
+    {
+      "url": "http://sandbox.mintlify.com"
     }
   ],
  "paths": {
