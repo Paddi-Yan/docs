@@ -1,6 +1,9 @@
 {
   "$schema": "https://mintlify.com/schema.json",
   "name": "Starter Kit",
+  "openapi": "https://api.topmediai.com/topmediai_api.json",
+  "baseUrl": "https://api.topmediai.com",
+  "disableProxy": true,
   "logo": {
     "dark": "/logo/dark.svg",
     "light": "/logo/light.svg"
@@ -28,8 +31,7 @@
   "tabs": [
     {
       "name": "API Reference",
-      "url": "api-reference",
-      "openapi": "https://api.topmediai.com/topmediai_api.json"
+      "url": "api-reference"
     }
   ],
   "anchors": [
