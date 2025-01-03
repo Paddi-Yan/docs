@@ -6,8 +6,8 @@
     "light": "/logo/light.svg"
   },
   "api": {
-    "mode": "simple",
     "playground": {
+      "mode": "simple",
       "disableProxy": true
     }
   },
