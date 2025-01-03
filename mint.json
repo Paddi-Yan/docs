@@ -7,7 +7,6 @@
   },
   "api": {
     "playground": {
-      "mode": "simple",
       "disableProxy": true
     }
   },
