@@ -19,6 +19,49 @@
     }
   ],
   "paths": {
+    "/v1/voices_list": {
+      "get": {
+        "tags": [
+          "Text-to-Speech"
+        ],
+        "summary": "Get Voice List",
+        "description": "Gets a list of all available voices for us.",
+        "operationId": "get_voice_list_v1_voices_list_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            },
+            "name": "x-api-key",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIVoicesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/plants": {
       "get": {
         "description": "Returns all plants from the system that the user has access to",
