@@ -9,7 +9,7 @@
     "playground": {
       "disableProxy": true,
     }
-  }
+  },
   "favicon": "/favicon.svg",
   "colors": {
     "primary": "#0D9373",
