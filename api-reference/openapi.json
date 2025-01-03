@@ -13,12 +13,7 @@
       "url": "https://api.topmediai.com"
     }
   ],
-  "security": [
-    {
-      "bearerAuth": []
-    }
-  ],
-  "paths": {
+ "paths": {
     "/v1/voices_list": {
       "get": {
         "tags": [
@@ -62,54 +57,30 @@
         }
       }
     },
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
+    "/v1/text2speech": {
+      "post": {
+        "tags": [
+          "Text-to-Speech"
+        ],
+        "summary": "Text To Speech",
+        "description": "Converts text into speech using a voice of your choice and returns audio.",
+        "operationId": "text_to_speech_v1_text2speech_post",
         "parameters": [
           {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
+            "required": false,
             "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
+              "title": "X-Api-Key",
+              "type": "string"
+            },
+            "name": "x-api-key",
+            "in": "header"
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
         "requestBody": {
-          "description": "Plant to add to the store",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/TTSBodySchemas"
               }
             }
           },
@@ -117,21 +88,21 @@
         },
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+
                 }
               }
             }
           },
-          "400": {
-            "description": "unexpected error",
+          "422": {
+            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -139,32 +110,672 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/v1/clone": {
+      "post": {
+        "tags": [
+          "Clone-Voice"
+        ],
+        "summary": "Clone Voice",
+        "description": "Clone a new voice for yourself",
+        "operationId": "clone_voice_v1_clone_post",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/VoiceClonePlanName"
+                }
+              ]
+            },
+            "name": "model",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            },
+            "name": "x-api-key",
+            "in": "header"
           }
         ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_clone_voice_v1_clone_post"
+              }
+            }
           },
-          "400": {
-            "description": "unexpected error",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/APIVoiceCloneResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/clone_voices_list": {
+      "get": {
+        "tags": [
+          "Clone-Voice"
+        ],
+        "summary": "Get Clone Voices List",
+        "description": "Gets a list of all cloned voices for you",
+        "operationId": "get_clone_voices_list_v1_clone_voices_list_get",
+        "parameters": [
+          {
+            "description": "Fuzzy matching with voice's name",
+            "required": false,
+            "schema": {
+              "title": "Name",
+              "type": "string",
+              "description": "Fuzzy matching with voice's name"
+            },
+            "name": "name",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            },
+            "name": "x-api-key",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIVoiceCloneInfoResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/clone_voice_del/{speaker}": {
+      "delete": {
+        "tags": [
+          "Clone-Voice"
+        ],
+        "summary": "Delete Clone Voice",
+        "description": "Delete a cloned voice by its speaker.",
+        "operationId": "delete_clone_voice_v1_clone_voice_del__speaker__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "string"
+            },
+            "name": "speaker",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            },
+            "name": "x-api-key",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/get_api_key_info": {
+      "get": {
+        "tags": [
+          "X-API-Key-Info"
+        ],
+        "summary": "Get Api Key Info",
+        "description": "Get the remaining rights and interests information of the current x-api-key.",
+        "operationId": "get_api_key_info_v1_get_api_key_info_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            },
+            "name": "x-api-key",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeysResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/singers": {
+      "get": {
+        "tags": [
+          "AI-Song-Cover"
+        ],
+        "summary": "Get Singer List",
+        "description": "Gets a list of all available singers for us.",
+        "operationId": "get_voice_list_v1_singers_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            },
+            "name": "x-api-key",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APISingersResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cover": {
+      "post": {
+        "tags": [
+          "AI-Song-Cover"
+        ],
+        "summary": "AI Cover",
+        "description": "Use your files or youtube links to do a cover and return the audio.",
+        "operationId": "cover_v1_cover_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            },
+            "name": "x-api-key",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_cover_v1_cover_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/voices": {
+      "get": {
+        "tags": [
+          "AI-Voice-Change"
+        ],
+        "summary": "Get VC Voices List",
+        "description": "Gets a list of all available singers for us.",
+        "operationId": "get_voice_list_v1_voices_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            },
+            "name": "x-api-key",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIVCVoiceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/voice_change": {
+      "post": {
+        "tags": [
+          "AI-Voice-Change"
+        ],
+        "summary": "AI Voice Change",
+        "description": "Use your files to do a voice change and return the audio.",
+        "operationId": "voice_change_v1_voice_change_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            },
+            "name": "x-api-key",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_voice_change_v1_voice_change_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/lyrics": {
+      "post": {
+        "tags": [
+          "AI-Music-Generator"
+        ],
+        "summary": "AI Lyrics",
+        "description": "Use your prompt to do a lyrics.",
+        "operationId": "lyrics_v1_lyrics_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            },
+            "name": "x-api-key",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MusicLyricsBodySchemas"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/music": {
+      "post": {
+        "tags": [
+          "AI-Music-Generator"
+        ],
+        "summary": "AI Music Generator",
+        "description": "Use your lyrics or param to do a music and return the audio.",
+        "operationId": "music_v1_music_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            },
+            "name": "x-api-key",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MusicBodySchemas"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/submit": {
+      "post": {
+        "tags": [
+          "AI-Music-Generator"
+        ],
+        "summary": "Submit the music generation task",
+        "description": "Music generation task submission endpoints: \r\n1. Make a request with the required parameters (parameters are described in detail in the schema below). \r\n2. the endpoint will return the song information, including the song id and audio audition and image routing and task processing status (stream, error, complete). \r\n3. Song id can query song information and generation status through the query interface. \r\n4. In particular, do not use the V2 interface for arguments or responses in V1, it is just not allowed",
+        "operationId": "submit_v2_submit_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            },
+            "name": "x-api-key",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MusicV2BodySchemas"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/query": {
+      "get": {
+        "tags": [
+          "AI-Music-Generator"
+        ],
+        "summary": "Querying the music generation status.",
+        "operationId": "query_v2_query_get",
+        "parameters": [
+          {
+            "description": "The song_id is the song id returned by submit/concat and can be used by the query endpoint to generate the details. The song_id parameter can be a single or multiple song_id parameters, which must be separated by a ', ', e.g. 454545,454545",
+            "required": false,
+            "schema": {
+              "title": "Song id",
+              "type": "string",
+              "description": "The song_id is the song id returned by submit/concat and can be used by the query endpoint to generate the details. The song_id parameter can be a single or multiple song_id parameters, which must be separated by a ', ', e.g. 454545,454545",
+              "default": "",
+              "example": "3dfcac44-e5a4-11ee-b5bb-00163e0425ea"
+            },
+            "name": "song_id",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            },
+            "name": "x-api-key",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/concat": {
+      "post": {
+        "tags": [
+          "AI-Music-Generator"
+        ],
+        "summary": "Combine your music to create a new song.",
+        "description": "After using the extension feature in /v2/submit, a new part2 song will be generated, and using the concat endpoint,you can link the part1 and part2 songs together, so that the task will have an integrated song.If you extend it several times, that is, if you have parts 1, 2, 3, and 4, using the concat endpoint will link parts 1, 2, 3, and 4 into a song;",
+        "operationId": "concat_v2_concat_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            },
+            "name": "x-api-key",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConcatV2BodySchemas"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -175,63 +786,613 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
+      "APIKeysResponse": {
+        "title": "APIKeysResponse",
         "required": [
-          "name"
+          "x_api_key",
+          "key_status",
+          "key_words_counts",
+          "key_clone_voices",
+          "key_cover_counts",
+          "key_vc_counts",
+          "key_music_counts"
+        ],
+        "type": "object",
+        "properties": {
+          "x_api_key": {
+            "title": "X Api Key",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "member_id": {
+            "title": "Member Id",
+            "type": "string"
+          },
+          "key_status": {
+            "title": "Key Status",
+            "type": "integer"
+          },
+          "key_words_counts": {
+            "title": "Key Words Counts",
+            "type": "integer"
+          },
+          "key_clone_voices": {
+            "title": "Key Clone Voices",
+            "type": "integer"
+          },
+          "key_cover_counts": {
+            "title": "Key Cover Counts",
+            "type": "integer"
+          },
+          "key_vc_counts": {
+            "title": "Key Vc Counts",
+            "type": "integer"
+          },
+          "key_music_counts": {
+            "title": "Key Music Counts",
+            "type": "integer"
+          },
+          "key_created_at": {
+            "title": "Key Created At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "key_updated_at": {
+            "title": "Key Updated At",
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "APISingersResponse": {
+        "title": "APISingersResponse",
+        "type": "object",
+        "properties": {
+          "Singers": {
+            "title": "Singers",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SingerSchemas"
+            }
+          }
+        }
+      },
+      "APIVCVoiceResponse": {
+        "title": "APIVCVoiceResponse",
+        "type": "object",
+        "properties": {
+          "Voices": {
+            "title": "Voices",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VCVoicesSchemas"
+            }
+          }
+        }
+      },
+      "APIVoiceCloneInfoResponse": {
+        "title": "APIVoiceCloneInfoResponse",
+        "required": [
+          "clone_voices"
+        ],
+        "type": "object",
+        "properties": {
+          "clone_voices": {
+            "title": "Clone Voices",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VoiceCloneInfoSchemas"
+            }
+          }
+        }
+      },
+      "APIVoiceCloneResponse": {
+        "title": "APIVoiceCloneResponse",
+        "required": [
+          "speaker"
+        ],
+        "type": "object",
+        "properties": {
+          "speaker": {
+            "title": "Speaker",
+            "type": "string",
+            "example": "d330dcc61cfc4bc090ed3b21197eda41"
+          }
+        }
+      },
+      "APIVoicesResponse": {
+        "title": "APIVoicesResponse",
+        "type": "object",
+        "properties": {
+          "Voice": {
+            "title": "Voice",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VoiceSchemas"
+            }
+          }
+        }
+      },
+      "Body_clone_voice_v1_clone_post": {
+        "title": "Body_clone_voice_v1_clone_post",
+        "required": [
+          "name",
+          "files"
         ],
         "type": "object",
         "properties": {
           "name": {
-            "description": "The name of the plant",
+            "title": "Name",
+            "maxLength": 50,
+            "minLength": 1,
             "type": "string"
           },
-          "tag": {
-            "description": "Tag to specify the type",
+          "files": {
+            "title": "Files",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "binary"
+            }
+          },
+          "description": {
+            "title": "Description",
             "type": "string"
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
-      "Error": {
+      "Body_cover_v1_cover_post": {
+        "title": "Body_cover_v1_cover_post",
         "required": [
-          "error",
-          "message"
+          "singer_id"
         ],
         "type": "object",
         "properties": {
-          "error": {
+          "singer_id": {
+            "title": "Singer Id",
             "type": "integer",
-            "format": "int32"
+            "description": "Singer ID"
           },
-          "message": {
+          "youtube_url": {
+            "title": "Youtube Url",
+            "type": "string",
+            "description": "Youtube Link",
+            "default": ""
+          },
+          "tran": {
+            "title": "Tran",
+            "type": "integer",
+            "description": "Adjusting the tone",
+            "default": 0
+          },
+          "file": {
+            "title": "File",
+            "type": "string",
+            "description": "File stream",
+            "format": "binary"
+          }
+        }
+      },
+      "Body_voice_change_v1_voice_change_post": {
+        "title": "Body_voice_change_v1_voice_change_post",
+        "required": [
+          "voice_id",
+          "mode"
+        ],
+        "type": "object",
+        "properties": {
+          "voice_id": {
+            "title": "Voice Id",
+            "type": "integer",
+            "description": "Voice ID"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "integer",
+            "description": "Mode corresponding to sound ID"
+          },
+          "file": {
+            "title": "File",
+            "type": "string",
+            "description": "File stream",
+            "format": "binary"
+          }
+        }
+      },
+      "ConcatV2BodySchemas": {
+        "title": "ConcatV2BodySchemas",
+        "required": [
+          "song_id"
+        ],
+        "type": "object",
+        "properties": {
+          "song_id": {
+            "title": "Song Id",
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string",
+            "description": "The song id, which is the id field returned by submit or query"
+          }
+        }
+      },
+      "HTTPValidationError": {
+        "title": "HTTPValidationError",
+        "type": "object",
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        }
+      },
+      "MusicBodySchemas": {
+        "title": "MusicBodySchemas",
+        "required": [
+          "is_auto",
+          "prompt"
+        ],
+        "type": "object",
+        "properties": {
+          "is_auto": {
+            "title": "Is Auto",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "integer",
+            "description": "Mandatory parameter, only the prompt parameter is valid if it is 1, otherwise, all parameters are valid.",
+            "example": 1
+          },
+          "prompt": {
+            "title": "Prompt",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string",
+            "description": "Mandatory parameter, generated song style",
+            "example": "Happy songs"
+          },
+          "lyrics": {
+            "title": "Lyrics",
+            "type": "string",
+            "description": "Non-mandatory parameter, default is null",
+            "default": "",
+            "example": "Enter the lyrics you've created"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string",
+            "description": "Non-mandatory parameter, default is null",
+            "default": "",
+            "example": "Happy Songs"
+          },
+          "instrumental": {
+            "title": "Instrumental",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "integer",
+            "description": "Non-mandatory parameter, default is 0",
+            "default": 0,
+            "example": 0
+          }
+        }
+      },
+      "MusicLyricsBodySchemas": {
+        "title": "MusicLyricsBodySchemas",
+        "required": [
+          "prompt"
+        ],
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "title": "Prompt",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string",
+            "description": "Mandatory parameter, generated song style",
+            "example": "Happy songs"
+          }
+        }
+      },
+      "MusicV2BodySchemas": {
+        "title": "MusicV2BodySchemas",
+        "required": [
+          "is_auto",
+          "prompt"
+        ],
+        "type": "object",
+        "properties": {
+          "is_auto": {
+            "title": "Is Auto",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "integer",
+            "description": "\nis_auto is used to control the use of custom mode or description mode:         \n1. is_auto is 1: Description mode, will only use the request parameters prompt and model_version, even if you pass other parameters, such as lyrics, title, etc., we will not apply them.\n2. is_auto is 0: Custom mode, we will apply all parameters to the generation task, including the updated extended song parameters.\n",
+            "example": 1
+          },
+          "prompt": {
+            "title": "Prompt",
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string",
+            "description": "\nThe prompt parameter is used to control the melody, tune, style, and so on of the entire song.\n",
+            "example": "Happy songs"
+          },
+          "lyrics": {
+            "title": "Lyrics",
+            "type": "string",
+            "description": "\nThe lyrics parameter controls what the song is about.\n",
+            "default": "",
+            "example": "Enter the lyrics you've created"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string",
+            "description": "\nCreate a title for the song you're writing.\n",
+            "default": "",
+            "example": "AI Music"
+          },
+          "instrumental": {
+            "title": "Instrumental",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "integer",
+            "description": "\nThe instrumental parameter is used to control whether the song is pure music or not. When instrumental is set to 1, the lyrics parameter will not be applied, even if it is included in your request\n",
+            "default": 0,
+            "example": 0
+          },
+          "model_version": {
+            "title": "Model Version",
+            "enum": [
+              "v3.5",
+              "v3.0"
+            ],
+            "type": "string",
+            "description": "\nv3.5 model: The length of the generated song is less than 4 minutes, and the lyrics can be input in length of 3000 characters, which makes the song smoother and more comfortable to listen to.\nv3.0 model: The length of song generation is less than 2 minutes, and the length of lyrics can be input up to 1000 characters.\n",
+            "default": "",
+            "example": "v3.5"
+          },
+          "continue_at": {
+            "title": "Continue At",
+            "type": "integer",
+            "description": "\nThe continue_at field is used to implement the song extension functionality. This parameter controls the time, in seconds, at which the extended song is enabled. Note that when using the extension function, the continue_at parameter must not be 0 or exceed the song duration, otherwise the request will be considered a failure and used in conjunction with continue_song_id.\n",
+            "default": 0,
+            "example": 0
+          },
+          "continue_song_id": {
+            "title": "Continue Song Id",
+            "type": "string",
+            "description": "\nThe continue_song_id field is used to extend the song. This parameter tells us which song you want to extend, and is used in conjunction with continue_at.\n",
+            "default": "",
+            "example": ""
+          }
+        }
+      },
+      "SingerSchemas": {
+        "title": "SingerSchemas",
+        "required": [
+          "singer_name",
+          "singer_id"
+        ],
+        "type": "object",
+        "properties": {
+          "singer_name": {
+            "title": "Singer Name",
+            "type": "string",
+            "description": "model name"
+          },
+          "singer_id": {
+            "title": "Singer Id",
+            "type": "integer"
+          }
+        }
+      },
+      "TTSBodySchemas": {
+        "title": "TTSBodySchemas",
+        "required": [
+          "text",
+          "speaker"
+        ],
+        "type": "object",
+        "properties": {
+          "text": {
+            "title": "Text",
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string",
+            "example": "Welcome to our API"
+          },
+          "speaker": {
+            "title": "Speaker",
+            "type": "string",
+            "example": "00151554-3826-11ee-a861-00163e2ac61b"
+          },
+          "emotion": {
+            "title": "Emotion",
+            "type": "string",
+            "description": "some voice have emotion: Angry, Cheerful, Sad, Excited, Friendly, Terrified, Shouting, Unfriendly, Whispering, Hopeful, Soulful, Pleasant, Complaining, Surprised, Uneasy, Fearful, Disgust",
+            "example": "Neutral"
+          }
+        }
+      },
+      "VCVoicesSchemas": {
+        "title": "VCVoicesSchemas",
+        "required": [
+          "voice_name",
+          "voice_id",
+          "mode"
+        ],
+        "type": "object",
+        "properties": {
+          "voice_name": {
+            "title": "Voice Name",
+            "type": "string",
+            "description": "voice name"
+          },
+          "voice_id": {
+            "title": "Voice Id",
+            "type": "integer"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "integer"
+          }
+        }
+      },
+      "ValidationError": {
+        "title": "ValidationError",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "loc": {
+            "title": "Location",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
             "type": "string"
           }
         }
-      }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+      },
+      "VoiceCloneInfoSchemas": {
+        "title": "VoiceCloneInfoSchemas",
+        "required": [
+          "name",
+          "speaker",
+          "files",
+          "model"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "speaker": {
+            "title": "Speaker",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "files": {
+            "title": "Files",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          }
+        }
+      },
+      "VoiceClonePlanName": {
+        "title": "VoiceClonePlanName",
+        "enum": [
+          "Fast",
+          "Gen"
+        ],
+        "type": "string",
+        "description": "An enumeration."
+      },
+      "VoiceSchemas": {
+        "title": "VoiceSchemas",
+        "required": [
+          "Languagename",
+          "plan",
+          "speaker"
+        ],
+        "type": "object",
+        "properties": {
+          "Languagename": {
+            "title": "Languagename",
+            "type": "string",
+            "description": "voice's language"
+          },
+          "classification": {
+            "title": "Classification",
+            "type": "string"
+          },
+          "classnamearray": {
+            "title": "Classnamearray",
+            "type": "string",
+            "example": "Daily;Male;Neutral"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "plan": {
+            "title": "Plan",
+            "type": "integer"
+          },
+          "speaker": {
+            "title": "Speaker",
+            "type": "string",
+            "example": "00151554-3826-11ee-a861-00163e2ac61b"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "typeishot": {
+            "title": "Typeishot",
+            "type": "boolean"
+          },
+          "urlname": {
+            "title": "Urlname",
+            "type": "string"
+          },
+          "trending": {
+            "title": "Trending",
+            "type": "boolean"
+          },
+          "describe": {
+            "title": "Describe",
+            "type": "string"
+          },
+          "modeltoken": {
+            "title": "Modeltoken",
+            "type": "string"
+          },
+          "voiceisnew": {
+            "title": "Voiceisnew",
+            "type": "boolean"
+          },
+          "avatar_url": {
+            "title": "Avatar Url",
+            "type": "string"
+          },
+          "isvip": {
+            "title": "Isvip",
+            "type": "boolean"
+          },
+          "isFree": {
+            "title": "Isfree",
+            "type": "boolean"
+          },
+          "urllist": {
+            "title": "Urllist",
+            "type": "string"
+          }
+        }
       }
     }
   }
