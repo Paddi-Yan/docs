@@ -1,7 +1,9 @@
 {
   "$schema": "https://mintlify.com/schema.json",
   "name": "Starter Kit",
-  "baseUrl": "https://api.topmediai.com",
+  "api": {
+      "baseUrl": "https://api.topmediai.com",
+  }
   "disableProxy": true,
   "logo": {
     "dark": "/logo/dark.svg",
