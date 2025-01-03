@@ -7,7 +7,7 @@
   },
   "api": {
     "playground": {
-      "disableProxy": true,
+      "disableProxy": true
     }
   },
   "favicon": "/favicon.svg",
